@@ -38,6 +38,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             return $this;
         }
 
+        /**
+         * use only for sms.ir server
+         * @param $secret_key
+         * @return $this
+         */
         public function set_secret_key($secret_key) {
             $this->secret_key = $secret_key;
             return $this;

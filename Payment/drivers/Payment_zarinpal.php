@@ -11,7 +11,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             $this->ci       =   & get_instance();
             $this->ci->load->library('session');
             $this->parent   =  $this->ci->payment;
-            require_once APPPATH.'libraries/nusoap.php';
+            include APPPATH.'libraries/Payment/drivers/nusoap.php';
         }
 
 		function is_zarin_gate() {
@@ -141,7 +141,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                         $this->parent->set_var('payload',json_decode(base64_decode($_GET['payload']),TRUE));
                     }
 
-                    return $result->Status;
+                    return FALSE;
                 }
 
             } else {

@@ -1155,28 +1155,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
     }
 
-    //@note add encryption key [password_salt] in config.php
-    function encrypt($data,$key = '',$bit = 256) {
-
-        $CI = & get_instance();
-        $CI->load->library('aes');
-        $CI->aes->SetBit($bit);
-
-        if ($key == '')
-            $key    =   config_item('password_salt');
-
-        return $CI->aes->Encrypt($data,$key);
-
-    }
-
-    //@note add encryption key [password_salt] in config.php
-    function decrypt($data,$bit = 256) {
-        $CI = & get_instance();
-        $CI->load->library('aes');
-        $CI->aes->SetBit($bit);
-        return $CI->aes->Decrypt($data,config_item('password_salt'));
-    }
-
     function curl($url,$method = "POST",$fields = array(),$header = array(),$return_transfer = 0,$nobody = FALSE) {
 
         if (strtolower($method) == 'get')

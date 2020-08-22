@@ -23,6 +23,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             return $this;
         }
 
+        function prepare($template,$text = '') {
+            return $template;
+        }
+
         function send() {
 
             if (count($this->parameters) == 0) {

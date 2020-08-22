@@ -270,8 +270,8 @@ class phpMQTT {
 		$head{0} = chr($cmd);		
 		$head .= $this->setmsglength($i);
 
-		fwrite($this->socket, $head, strlen($head));
-		fwrite($this->socket, $buffer, $i);
+		@fwrite($this->socket, $head, strlen($head));
+		@fwrite($this->socket, $buffer, $i);
 
 	}
 

@@ -11,6 +11,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             $this->parent   =   $this->ci->sms;
         }
 
+        function prepare($template,$text) {
+            $res = str_replace('%%',$text,$template);
+            $this->parent->set_text($res);
+        }
+
         function send() {
 
             $from_number    =   $this->parent->sender;
@@ -25,6 +30,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             else
                 return FALSE;
 
+        }
+
+        /**
+         * this method is unusable
+         * @return $this
+         */
+        function add_parameter($key,$value) {
+            return $this;
         }
 
         function credit() {

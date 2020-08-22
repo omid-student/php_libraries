@@ -33,6 +33,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         function __construct() {
             $this->CI = & get_instance();
             $this->valid_drivers = array('zarinpal','pay');
+            $this->CI->load->helper(array('authorization','jwt'));
+            $this->CI->load->config('jwt');
         }
 
         function set_merchant_id($id) {
