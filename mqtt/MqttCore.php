@@ -211,12 +211,12 @@ class phpMQTT {
 		$head = chr($cmd);
 		$head .= chr($i);
 		
-		fwrite($this->socket, $head, 2);
-		fwrite($this->socket, $buffer, $i);
-		$string = $this->read(2);
+		@fwrite($this->socket, $head, 2);
+		@fwrite($this->socket, $buffer, $i);
+		$string = @$this->read(2);
 		
 		$bytes = ord(substr($string,1,1));
-		$string = $this->read($bytes);
+		$string = @$this->read($bytes);
 	}
 
 	/* ping: sends a keep alive ping */

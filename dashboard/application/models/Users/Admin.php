@@ -20,6 +20,7 @@
               `full_name` varchar(120) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
               `mobile` char(11) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
               `code` int(11) DEFAULT NULL,
+              `permission` varchar(3000) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
               `token` varchar(300) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
               `status` char(1) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT '1',
               PRIMARY KEY (`pid`),
@@ -54,6 +55,15 @@ INSERT INTO `tbl_admin` (`pid`, `username`, `password`, `full_name`, `mobile`, `
 
             $this->admin_info   =   $result->row();
 
+			if (!preg_match('/\d+/',$ci->uri->segment(count($ci->uri->segment_array()))))
+				$last_segment_uri   =   $ci->uri->segment(count($ci->uri->segment_array()));
+			else
+				$last_segment_uri   =   $ci->uri->segment(count($ci->uri->segment_array())-1);
+		
+			$permission_check   =   $ci->admin->check_permission($this->admin_info->username,$last_segment_uri);
+			if ($permission_check == FALSE)
+				redirect(base_url('index.php/dashboard/deny'));
+		
             return $result->row()->username;
 
         }
@@ -120,17 +130,90 @@ INSERT INTO `tbl_admin` (`pid`, `username`, `password`, `full_name`, `mobile`, `
             return $ci->pagination->create_links();
 
         }
+		
+		function add($username,$password,$fullname,$mobile,$permission) {
 
-        function _failed_login($error = '') {
+        $salt           =   uniqid();
 
-            $ci = & get_instance();
+        $this->db->set('username',$username);
+        $this->db->set('password',md5($salt.$password));
+        $this->db->set('full_name',$fullname);
+        $this->db->set('mobile',$mobile);
+        $this->db->set('salt', $salt);
+        $this->db->set('permission', json_encode($permission));
+        $this->db->insert('admin');
 
-            $ci->session->unset_userdata('is_login');
-            $ci->session->unset_userdata('user_token');
-            $ci->session->sess_destroy();
+        return TRUE;
 
-            redirect(base_url('panel/admin/login?error='.$error));
+		}
 
-        }
+		function update($username,$permission) {
+
+			$this->db->where('username',$username);
+			$this->db->set('permission', json_encode($permission));
+			$this->db->update('admin');
+
+			return TRUE;
+
+		}
+
+		function delete($username) {
+			$this->db->where('username',$username)->delete('admin');
+		}
+
+		function info($username) {
+			$result =   $this->db->where('username',$username)->get('admin');
+			if ($result->num_rows() == 0)
+				return FALSE;
+			else
+				return $result->row();
+		}
+
+		function get() {
+			return $this->db->order_by('username','DESC')->get('admin')->result_array();
+		}
+
+		//add complete url without number or pagination
+        //default is current url
+		function check_permission($username,$permission_url = '') {
+
+            if ($permission_url == '') {
+                $urls   =   $this->uri->segment_array();
+                foreach ($urls as $url) {
+                    if (!is_numeric($url))
+                        $permission_url .= $url.'/';
+                }
+                $permission_url    =   substr($permission_url,0,strlen($permission_url)-1);
+            }
+
+			$this->db->where('username',$username);
+			$result =   $this->db->get('admin');
+
+			if ($result->num_rows() == 0)
+				return FALSE;
+
+			$permissions    =   $result->row()->permission;
+
+			if ($permissions == NULL)
+				return TRUE;
+
+			if (!in_array($permission_url,json_decode($permissions)))
+				return FALSE;
+			else
+				return TRUE;
+
+		}
+
+		function _failed_login($error = '') {
+
+			$ci = & get_instance();
+
+			$ci->session->unset_userdata('is_login');
+			$ci->session->unset_userdata('user_token');
+			$ci->session->sess_destroy();
+
+			redirect(base_url('panel/admin/login?error='.$error));
+
+		}
 
     }

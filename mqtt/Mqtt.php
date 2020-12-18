@@ -9,6 +9,7 @@
     * @property $password string if authentication is enable
     * @property $client_id string is unique for each user
     * @property $keep_alive int is timer for keep connection
+    * @property $will array(qos,retain,topic,content)
     */
     class Mqtt
     {
@@ -24,6 +25,7 @@
         private $keep_alive = 10;
         private $timeout = -1;
         private $start_time;
+        private $will = NULL;
 
         function __construct() {
             require(APPPATH . "libraries/MqttCore.php");
@@ -59,6 +61,11 @@
                 $this->keep_alive = $value;
             }
 
+            if ($name == 'will') {
+                $this->will = $value;
+
+            }
+
         }
 
         function set_parent($parent) {
@@ -69,7 +76,7 @@
 
             $this->mqtt = new phpMQTT($this->server, $this->port, $this->client_id,$this);
             $this->mqtt->keepalive = $this->keep_alive;
-            if (@$this->mqtt->connect(FALSE, FALSE, $this->username, $this->password) == FALSE) {
+            if (@$this->mqtt->connect(TRUE, $this->will, $this->username, $this->password) == FALSE) {
                 return FALSE;
             }
 
@@ -86,7 +93,7 @@
             $topics[$topic_name]    =   array("qos" => $qos, "function" => "on_message",'event' => $event);
             $this->topics[]         =   $topics;
 
-            $this->mqtt->subscribe($topics, 0);
+            $this->mqtt->subscribe($topics, $qos);
 
             return $this;
 

@@ -51,6 +51,7 @@
                      ->set('parent_id',$ticket_id)
                      ->set('is_admin',intval($is_admin))
                      ->set('admin_id',$admin_id)
+                     ->set('seen',0)
                      ->insert('ticket');
 
             if ($is_admin == TRUE) {
@@ -65,6 +66,11 @@
 
         }
 
+        /**
+         * set $sub_tickets to TRUE for delete all sub parent tickets
+         * @param $ticket_id
+         * @param bool $sub_tickets
+         */
         function delete($ticket_id,$sub_tickets = FALSE) {
 
             $this->db->where('pid',$ticket_id)->delete('ticket');
@@ -143,6 +149,12 @@
 
         }
 
+        /**
+         * get user or admin replies and set seen all messages
+         * @param $ticket_id
+         * @param bool $open_by_admin
+         * @return array
+         */
         function get_replies($ticket_id,$open_by_admin = FALSE) {
 
             $this->db->select('*');
@@ -158,8 +170,12 @@
                     $this->db->where('pid', $ticket_id)->set('status', self::STATUS_OPEN)->update('ticket');
                 }
 
+                $this->db->where('is_admin',0);
                 $this->db->where('parent_id',$ticket_id)->set('seen',1)->update('ticket');
 
+            } else {
+                $this->db->where('is_admin',1);
+                $this->db->where('parent_id',$ticket_id)->set('seen',1)->update('ticket');
             }
 
             for ($i = 0 ; $i < count($result) ; $i++) {
@@ -170,11 +186,18 @@
 
         }
 
-        function get_new_replies($only_main_ticket = FALSE) {
+        /**
+         * get unread message for admin or user
+         * @param bool $only_main_ticket,if it's true so return only tickets with replies count
+         * @param bool $only_users_reply,return only admin or users replies
+         * @return array
+         */
+        function get_new_replies($only_main_ticket = FALSE,$only_users_reply = FALSE) {
 
             $this->db->select('*');
             $this->db->select('(SELECT fullname FROM tbl_admin WHERE pid = tbl_ticket.admin_id) AS admin_name');
             $this->db->where('is_main',0);
+            if ($only_users_reply == TRUE) $this->db->where('is_admin',0);
             $this->db->where('seen',0);
             $this->db->order_by('date_created','DESC');
             $result =   $this->db->get('ticket')->result_array();
@@ -323,9 +346,9 @@
         function install() {
 
             $this->db->query('CREATE TABLE `tbl_ticket` (
-              `pid` int(11) NOT NULL,
+              `pid` bigint(20) NOT NULL,
               `user_id` int(11) NOT NULL,
-              `parent_id` int(11) DEFAULT NULL,
+              `parent_id` bigint(20) DEFAULT NULL,
               `department_id` int(11) DEFAULT NULL,
               `subject` varchar(100) COLLATE utf8_bin DEFAULT NULL,
               `text` text COLLATE utf8_bin NOT NULL,
@@ -359,9 +382,14 @@
         }
 
         private	function generate_ticket_id($user_id) {
-            $cur_date = date('his',time());
-            $ticket = $user_id.$cur_date;
+
+            $nums   =   $this->db->where('user_id',$user_id)->get('ticket')->num_rows();
+            ++$nums;
+
+            $ticket = $user_id.$nums;
+
             return $ticket;
+
         }
     
     }

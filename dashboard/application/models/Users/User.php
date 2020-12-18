@@ -73,7 +73,7 @@
 
         }
 
-        function confirm_sms($mobile,$code,$token) {
+        function confirm_sms($mobile,$code,$agent,$token) {
 
             $sess_token = $this->session->userdata('token');
 
@@ -81,7 +81,20 @@
                 return lang('error_timeout_code');
 
             if (!preg_match('/^\d{4,5}$/', $code))
-                return lang('error_invalid_code');
+                return lang('error_invitation_code');
+
+            $have_agent =   FALSE;
+
+            if ($agent != '') {
+
+                $agent_status   =   $this->db->where('invitation_code',$agent)->get('user');
+
+                if ($agent_status->num_rows() == 0)
+                    return lang('error_invitation_code');
+
+                $have_agent =   TRUE;
+
+            }
 
             $check_mobile = $this->check_mobile($mobile);
 
@@ -97,6 +110,7 @@
                 $this->db->trans_start();
                 $this->db->set('mobile',$mobile);
                 $this->db->set('pid',$this->generate_user_id());
+                $this->db->set('invite_code',$agent);
                 $this->db->set('invitation_code',$this->generate_invitation_code());
                 $this->db->set('ip',ip2long($this->input->ip_address()));
                 $this->db->set('last_modified',date('Y-m-d H:i:s',time()));
@@ -105,6 +119,20 @@
                 if ($this->db->affected_rows() > 0) {
 
                     $user_id = $this->db->insert_id();
+
+                    if ($have_agent) {
+
+                        $score_agent    =   config_item('register_agent_score');
+
+                        $this->db->set('score',"score + $score_agent",FALSE);
+                        $this->db->where('invitation_code',$agent);
+                        $this->db->update('user');
+
+                        $this->db->set('score',"score + $score_agent",FALSE);
+                        $this->db->where('pid',$user_id);
+                        $this->db->update('user');
+
+                    }
 
                     $payload = array();
                     $payload['pid']         =   $user_id;
@@ -318,7 +346,7 @@
          */
         function getUser($user_id) {
 
-            $this->db->select('`pid`, `first_name`, `last_name`, `mobile`, `birthday`, `email`, `cash`, `invite_code`, `ip`, `status`, `date_registered`,last_modified');
+            $this->db->select('`pid`, `first_name`, `last_name`, `mobile`, `birthday`, `email`, `discount`, `cash`, `job`, `invite_code`,`invitation_code` , `ip`, `status`, `date_registered`,last_modified,score');
 
             $info   =   $this->db->where('pid',$user_id)->get('user');
 
@@ -525,7 +553,7 @@
 
         function generate_invitation_code() {
 
-            $length     =   10;
+            $length     =   5;
 
             $inviteCode = "";
             $characters = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -572,7 +600,11 @@
         public $gender,$age;
         public $email;
         public $cash;
-        public $invite_code,$invitation_code;
+        public $discount;
+        public $score;
+        public $job;
+        public $invite_code;
+        public $invitation_code;
         public $ip;
         public $status;
         public $app_os,$app_version,$app_device_id;
@@ -853,6 +885,7 @@
             unset($data['vn']);
             unset($data['pn']);
             unset($data['os']);
+            unset($data['files']);
 
             if (isset($data['birthday']))
                 if (!preg_match('/\d{4}-\d{1,2}-\d{1,2}/',$data['birthday']))
@@ -901,7 +934,7 @@
             $this->mobile   =   $mobile;
         }
 
-        function sendSms($text) {
+        function sendSms($text,$template_id = '') {
 
             $ci = & get_instance();
 
@@ -911,7 +944,7 @@
             $ci->sms->set_mobile($this->mobile);
             $ci->sms->set_token(config_item('smsir_apikey'));
             $ci->sms->set_secret_key(config_item('smsir_secretkey'));
-            $ci->sms->smsir->set_template_id(config_item('smsir_template_id'));
+            $ci->sms->smsir->set_template_id($template_id == '' ? config_item('smsir_template_id') : $template_id);
             $ci->sms->smsir->add_parameter('value',$text);
             $result =   $ci->sms->smsir->send();
 
