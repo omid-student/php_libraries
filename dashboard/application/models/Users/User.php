@@ -147,7 +147,7 @@
 
                     $this->session->unset_userdata('token');
 
-                    return array('token' => $token, 'action' => 'register');
+                    return array('token' => $token, 'action' => 'register','user_id' => $user_id);
 
                 } else {
                     return FALSE;
@@ -900,10 +900,10 @@
 
                 $config['file_name'] = "{$this->pid}.jpg";
                 $config['allowed_types'] = 'jpg';
-                $config['max_width'] = 500;
+                $config['max_width'] = 700;
                 $config['min_width'] = 100;
                 $config['min_height'] = 100;
-                $config['max_height'] = 500;
+                $config['max_height'] = 700;
                 $config['overwrite'] = TRUE;
                 $config['max_size'] = 140000;
                 $config['upload_path'] = "files/user";

@@ -401,18 +401,33 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         $str = str_replace('ي','ی',$str);
         return $str;
     }
-	
-	function seconds_to_time($seconds) {
-            
+
+    /**
+     * convert second to human time
+     * @param $seconds seconds value
+     * @param bool $calculate_zero if set true so return lesser than zero second
+     * @return string
+     * @throws Exception
+     */
+	function seconds_to_time($seconds,$calculate_zero = FALSE) {
+
+        $prefix = '';
+
+        if ($seconds < 0)
+            if ($calculate_zero)
+                $prefix = ' گذشته';
+            else
+                return $calculate_zero;
+
 		$dtF = new \DateTime('@0');
 		$dtT = new \DateTime("@$seconds");
 		$dateInterval = $dtF->diff($dtT);
-		
+
 		$days_t = 'روز';
 		$hours_t = 'ساعت';
 		$minutes_t = 'دقیقه';
 		$seconds_t = 'ثانیه';
-		
+
 		if ((int)$dateInterval->d > 1) {
 			$days_t = 'روز';
 		}
@@ -428,24 +443,28 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 		if ((int)$dateInterval->d > 0) {
 			if ((int)$dateInterval->d > 1 || (int)$dateInterval->h === 0) {
-				return $dateInterval->format("%a $days_t");
+				return $dateInterval->format("%a $days_t").$prefix;
 			} else {
-				return $dateInterval->format("%a $days_t  %h $hours_t");
+
+                if ((int)$dateInterval->d > 0 && (int)$dateInterval->h > 0 && (int)$dateInterval->i > 0)
+                    return $dateInterval->format("%a $days_t  %h $hours_t %i $minutes_t").$prefix;
+                else
+				    return $dateInterval->format("%a $days_t  %h $hours_t".$prefix);
 			}
 		} else if ((int)$dateInterval->h > 0) {
 			if ((int)$dateInterval->h > 1 || (int)$dateInterval->i === 0) {
-				return $dateInterval->format("%h $hours_t");
+				return $dateInterval->format("%h $hours_t".$prefix);
 			} else {
-				return $dateInterval->format("%h $hours_t  %i $minutes_t");
+				return $dateInterval->format("%h $hours_t  %i $minutes_t".$prefix);
 			}
 		} else if ((int)$dateInterval->i > 0) {
 			if ((int)$dateInterval->i > 1 || (int)$dateInterval->s === 0) {
-				return $dateInterval->format("%i $minutes_t");
+				return $dateInterval->format("%i $minutes_t").$prefix;
 			} else {
-				return $dateInterval->format("%i $minutes_t  %s $seconds_t");
+				return $dateInterval->format("%i $minutes_t  %s $seconds_t").$prefix;
 			}
 		} else {
-			return $dateInterval->format("%s $seconds_t");
+			return $dateInterval->format("%s $seconds_t").$prefix;
 		}
 
 	}

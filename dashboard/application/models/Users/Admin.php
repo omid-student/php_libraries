@@ -210,7 +210,6 @@ INSERT INTO `tbl_admin` (`pid`, `username`, `password`, `full_name`, `mobile`, `
 
 			$ci->session->unset_userdata('is_login');
 			$ci->session->unset_userdata('user_token');
-			$ci->session->sess_destroy();
 
 			redirect(base_url('panel/admin/login?error='.$error));
 

@@ -75,7 +75,7 @@ class phpMQTT {
 	/* connects to the broker 
 		inputs: $clean: should the client send a clean session flag */
 	function connect($clean = true, $will = NULL, $username = NULL, $password = NULL){
-		
+
 		if($will) $this->will = $will;
 		if($username) $this->username = $username;
 		if($password) $this->password = $password;
@@ -154,7 +154,7 @@ class phpMQTT {
 
 		if(ord($string{0})>>4 == 2 && $string{3} == chr(0)){
 			if($this->debug) echo "Connected to Broker\n"; 
-		}else{	
+		}else{
 			error_log(sprintf("Connection failed! (Error: 0x%02x 0x%02x)\n", 
 			                        ord($string{0}),ord($string{3})));
 			return false;

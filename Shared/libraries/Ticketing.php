@@ -197,7 +197,11 @@
             $this->db->select('*');
             $this->db->select('(SELECT fullname FROM tbl_admin WHERE pid = tbl_ticket.admin_id) AS admin_name');
             $this->db->where('is_main',0);
-            if ($only_users_reply == TRUE) $this->db->where('is_admin',0);
+            if ($only_users_reply == TRUE) {
+                $this->db->where('user_id',$only_users_reply);
+                $this->db->where('is_admin',0);
+            }
+
             $this->db->where('seen',0);
             $this->db->order_by('date_created','DESC');
             $result =   $this->db->get('ticket')->result_array();
@@ -256,7 +260,7 @@
 
             $this->db->set('seen',1);
             $this->db->where('parent_id',$ticket_id);
-            $this->db->where('pid',$ticket_id);
+            $this->db->or_where('pid',$ticket_id);
             $this->db->update('ticket');
 
             return $this->db->affected_rows() == 0 ? FALSE : TRUE;
