@@ -13,12 +13,12 @@
             @mkdir($this->path);
             $this->path =   $this->path.'/';
 
-            $this->db->query('DROP TABLE IF EXISTS `tbl_upload`;
+            $this->db->query('
                 CREATE TABLE IF NOT EXISTS `tbl_upload` (
                   `pid` int(11) NOT NULL AUTO_INCREMENT,
-                  `file_name` varchar(200) CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
-                  `file_type` varchar(100) CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
-                  `file_size` INT NOT NULL CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
+                  `file_name` varchar(200) NOT NULL,
+                  `file_type` varchar(100) NOT NULL,
+                  `file_size` INT NOT NULL NOT NULL,
                   `date_registered` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                   PRIMARY KEY (`pid`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_persian_ci;');
