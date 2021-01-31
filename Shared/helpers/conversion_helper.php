@@ -468,3 +468,27 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 		}
 
 	}
+
+	/*
+	 * convert base64 picture to file
+	 */
+    function base64_to_jpeg($base64_string, $output_file) {
+
+        $res = str_replace(' ', '+', $base64_string);
+        $ifp = fopen($output_file, "wb");
+        fwrite($ifp, base64_decode($res));
+        fclose($ifp);
+
+        return $output_file;
+
+    }
+
+    function jpeg_to_base64($filename) {
+
+        $type = pathinfo($filename, PATHINFO_EXTENSION);
+        $data = file_get_contents($filename);
+        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+        return $base64;
+
+    }
