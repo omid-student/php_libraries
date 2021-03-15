@@ -350,7 +350,7 @@
         function install() {
 
             $this->db->query('CREATE TABLE `tbl_ticket` (
-              `pid` bigint(20) NOT NULL,
+              `pid` varchar(50) NOT NULL,
               `user_id` int(11) NOT NULL,
               `parent_id` bigint(20) DEFAULT NULL,
               `department_id` int(11) DEFAULT NULL,
@@ -381,18 +381,19 @@
             ALTER TABLE `tbl_ticket_department`
               MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;');
 
-            $this->db->query('CREATE TABLE `tainydow_newinstagram`.`tbl_ticket_attachment` ( `pid` INT NOT NULL AUTO_INCREMENT , `ticket_id` INT NOT NULL , `filename` VARCHAR(100) NOT NULL , PRIMARY KEY (`pid`)) ENGINE = InnoDB; ');
+            $this->db->query('CREATE TABLE `tbl_ticket_attachment` ( `pid` VARCHAR(50) NOT NULL , `ticket_id` INT NOT NULL , `filename` VARCHAR(100) NOT NULL , PRIMARY KEY (`pid`)) ENGINE = InnoDB; ');
 
         }
 
         private	function generate_ticket_id($user_id) {
 
-            $nums   =   $this->db->where('user_id',$user_id)->get('ticket')->num_rows();
-            ++$nums;
+            $id = uniqid();
 
-            $ticket = $user_id.$nums;
+            while($this->db->where('user_id',$user_id)->get('ticket')->num_rows() == 0) {
 
-            return $ticket;
+            }
+
+            return $id;
 
         }
     

@@ -5,12 +5,10 @@
         var $path = 'files/upload';
 
         function __construct() {
+			
             parent::__construct();
-        }
-
-        function initialize() {
-
-            @mkdir($this->path);
+			
+			@mkdir($this->path);
             $this->path =   $this->path.'/';
 
             $this->db->query('
@@ -22,8 +20,12 @@
                   `date_registered` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                   PRIMARY KEY (`pid`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_persian_ci;');
-
+				
         }
+		
+		function set_upload_path($path) {
+			$this->path = $path;
+		}
 
         function upload() {
 
